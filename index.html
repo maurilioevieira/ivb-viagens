@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IVB Viagens — gerador de cotação</title>
+<style>
+  :root{
+    --navy:#0F2A45;
+    --navy-2:#123454;
+    --orange:#E08A1E;
+    --teal:#0F6E56;
+    --ink:#1B1B18;
+    --ink-soft:#5B5B54;
+    --line:#DADCE0;
+    --bg:#EEF2F6;
+    --card:#FFFFFF;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;}
+  body{background:var(--bg);color:var(--ink);padding:28px 5vw 80px;}
+
+  h1.app-title{font-size:20px;margin-bottom:4px;color:var(--navy);}
+  p.app-sub{color:var(--ink-soft);font-size:13px;margin-bottom:24px;border-left:3px solid var(--orange);padding-left:10px;}
+
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+  @media(max-width:960px){.layout{grid-template-columns:1fr;}}
+
+  /* ---------- FORM ---------- */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden;}
+  .panel h2{font-size:14px;color:#fff;margin:0;text-transform:uppercase;letter-spacing:.04em;background:var(--navy);padding:14px 22px;}
+  .panel-body{padding:20px 22px;}
+  .section-title{font-size:12px;font-weight:bold;color:var(--navy);text-transform:uppercase;letter-spacing:.03em;margin:18px 0 8px;border-left:3px solid var(--orange);padding-left:8px;}
+  .section-title:first-of-type{margin-top:0;}
+  .row{display:grid;gap:10px;margin-bottom:10px;}
+  .row.c2{grid-template-columns:1fr 1fr;}
+  .row.c3{grid-template-columns:1fr 1fr 1fr;}
+  label{font-size:12px;color:var(--ink-soft);display:block;margin-bottom:3px;}
+  input,select,textarea{
+    width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;
+    font-size:13px;background:#fff;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 2px rgba(15,110,86,.15);}
+  textarea{resize:vertical;}
+  .actions{margin-top:20px;padding:0 22px 22px;display:flex;gap:10px;justify-content:flex-end;}
+  button{
+    border:none;border-radius:999px;padding:10px 18px;font-size:13px;font-weight:bold;
+    cursor:pointer;
+  }
+  #btn-preview{background:#fff;border:1px solid var(--navy);color:var(--navy);}
+  #btn-preview:hover{background:var(--bg);}
+  #btn-pdf{background:var(--orange);color:#fff;}
+  #btn-pdf:hover{background:#C6790F;}
+
+  /* ---------- PREVIEW (mesmo padrão visual do PDF original) ---------- */
+  #preview-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  #preview{width:100%;}
+  .doc-header{background:var(--navy);color:#fff;padding:24px 26px;position:relative;}
+  .doc-header .top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .doc-header h2{font-size:22px;letter-spacing:.02em;}
+  .doc-header p.tag{font-size:12px;color:#B9C6D4;margin-top:4px;}
+  .doc-header .meta{text-align:right;font-size:11px;color:#B9C6D4;}
+  .doc-header .meta b{display:block;font-size:11px;color:#fff;text-transform:uppercase;letter-spacing:.04em;}
+  .accent-bar{height:5px;background:var(--orange);}
+
+  .doc-body{padding:20px 26px 26px;}
+  .doc-section-title{
+    font-size:12px;font-weight:bold;color:var(--navy);text-transform:uppercase;
+    letter-spacing:.03em;border-left:3px solid var(--orange);padding-left:8px;margin:18px 0 10px;
+  }
+  .doc-section-title:first-child{margin-top:0;}
+
+  .flight-card{background:#F7F9FB;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px;}
+  .flight-card .route{font-size:12px;font-weight:bold;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;}
+  .flight-card .route .airline{color:var(--ink-soft);font-weight:normal;font-size:11px;}
+  .flight-times{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;}
+  .flight-times .time{font-size:20px;font-weight:bold;color:var(--navy);}
+  .flight-times .place{font-size:11px;color:var(--ink);}
+  .flight-times .date{font-size:10px;color:var(--ink-soft);}
+  .flight-times .mid{text-align:center;font-size:10px;color:var(--ink-soft);}
+  .flight-times .mid .duration{margin-bottom:2px;}
+  .flight-times .mid .direct{color:var(--teal);font-weight:bold;}
+  .flight-times .right{text-align:right;}
+
+  .baggage-box{background:#EEF4FB;border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--ink);}
+  .baggage-box p{margin-bottom:4px;}
+
+  .price-box{background:#F7F9FB;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-top:6px;}
+  .price-box .total{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .price-box .total .label{font-size:13px;font-weight:bold;color:var(--ink);}
+  .price-box .total .value{font-size:20px;font-weight:bold;color:var(--teal);}
+  .price-box .cond{font-size:12px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:8px;margin-top:4px;}
+  .price-box .cond div{margin-bottom:3px;}
+
+  .doc-footer{margin-top:20px;padding-top:12px;border-top:1px solid var(--line);font-size:10px;color:var(--ink-soft);text-align:center;}
+
+  @media print{
+    body{padding:0;background:#fff;}
+    .panel,.app-title,.app-sub,.actions{display:none !important;}
+    .layout{display:block;}
+    #preview-wrap{border:none;border-radius:0;}
+  }
+</style>
+</head>
+<body>
+
+<h1 class="app-title">IVB viagens — gerador de cotação</h1>
+<p class="app-sub">Preencha os dados do voo e gere o PDF de cotação para enviar ao cliente.</p>
+
+<div class="layout">
+
+  <div class="panel">
+    <h2>Dados da cotação</h2>
+    <div class="panel-body">
+
+    <div class="section-title">Voo de ida</div>
+    <div class="row c2">
+      <div><label>Origem (cidade + sigla)</label><input id="ida-origem" placeholder="Juazeiro do Norte (JDO)"></div>
+      <div><label>Destino (cidade + sigla)</label><input id="ida-destino" placeholder="Campinas (VCP)"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Companhia</label><input id="ida-cia" placeholder="Azul Linhas Aéreas"></div>
+      <div><label>Tipo</label>
+        <select id="ida-tipo"><option>Voo direto</option><option>Com conexão</option></select>
+      </div>
+    </div>
+    <div class="row c3">
+      <div><label>Data</label><input id="ida-data" placeholder="Domingo, 20 de Dezembro de 2026"></div>
+      <div><label>Horário saída</label><input id="ida-saida" placeholder="02:20"></div>
+      <div><label>Horário chegada</label><input id="ida-chegada" placeholder="05:20"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Duração</label><input id="ida-duracao" placeholder="3h de voo"></div>
+      <div></div>
+    </div>
+
+    <div class="section-title">Voo de volta</div>
+    <div class="row c2">
+      <div><label>Origem (cidade + sigla)</label><input id="volta-origem" placeholder="Campinas (VCP)"></div>
+      <div><label>Destino (cidade + sigla)</label><input id="volta-destino" placeholder="Juazeiro do Norte (JDO)"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Companhia</label><input id="volta-cia" placeholder="Azul Linhas Aéreas"></div>
+      <div><label>Tipo</label>
+        <select id="volta-tipo"><option>Voo direto</option><option>Com conexão</option></select>
+      </div>
+    </div>
+    <div class="row c3">
+      <div><label>Data</label><input id="volta-data" placeholder="Domingo, 17 de Janeiro de 2027"></div>
+      <div><label>Horário saída</label><input id="volta-saida" placeholder="22:50"></div>
+      <div><label>Horário chegada</label><input id="volta-chegada" placeholder="01:40 (+1 dia)"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Duração</label><input id="volta-duracao" placeholder="2h 50min de voo"></div>
+      <div></div>
+    </div>
+
+    <div class="section-title">Bagagem</div>
+    <div class="row">
+      <div><textarea id="bagagem" rows="2">Incluso na tarifa: apenas mala de mão (até 10kg) + item pessoal.
+Mala despachada (23kg): valor sob consulta (inclusão realizada após a compra das passagens).</textarea></div>
+    </div>
+
+    <div class="section-title">Valores e pagamento</div>
+    <div class="row c2">
+      <div><label>Valor total (ida e volta)</label><input id="valor-total" placeholder="R$ 2.500,00"></div>
+      <div><label>Pagamento à vista (Pix)</label><input id="valor-pix" placeholder="R$ 2.500,00"></div>
+    </div>
+    <div class="row">
+      <div><label>Condição no cartão</label><input id="valor-cartao" placeholder="Parcelado com acréscimo de juros da máquina"></div>
+    </div>
+
+    </div>
+    <div class="actions">
+      <button id="btn-preview" type="button">Atualizar prévia</button>
+      <button id="btn-pdf" type="button">Gerar PDF</button>
+    </div>
+  </div>
+
+  <div id="preview-wrap">
+    <div id="preview">
+      <div class="doc-header">
+        <div class="top">
+          <div>
+            <h2>IVB VIAGENS</h2>
+            <p class="tag">Sua próxima viagem começa aqui</p>
+          </div>
+          <div class="meta">
+            <b>Cotação de voo</b>
+            <span id="data-emissao"></span>
+          </div>
+        </div>
+      </div>
+      <div class="accent-bar"></div>
+      <div class="doc-body">
+
+        <div class="doc-section-title">Itinerário dos voos</div>
+
+        <div class="flight-card">
+          <div class="route">
+            <span id="pv-ida-rota">IDA: — → —</span>
+            <span class="airline" id="pv-ida-cia">—</span>
+          </div>
+          <div class="flight-times">
+            <div>
+              <div class="time" id="pv-ida-saida-h">--:--</div>
+              <div class="place" id="pv-ida-origem-txt">—</div>
+              <div class="date" id="pv-ida-data-txt">—</div>
+            </div>
+            <div class="mid">
+              <div class="duration" id="pv-ida-duracao">—</div>
+              <div class="direct" id="pv-ida-tipo">—</div>
+            </div>
+            <div class="right">
+              <div class="time" id="pv-ida-chegada-h">--:--</div>
+              <div class="place" id="pv-ida-destino-txt">—</div>
+              <div class="date" id="pv-ida-data-txt2">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flight-card">
+          <div class="route">
+            <span id="pv-volta-rota">VOLTA: — → —</span>
+            <span class="airline" id="pv-volta-cia">—</span>
+          </div>
+          <div class="flight-times">
+            <div>
+              <div class="time" id="pv-volta-saida-h">--:--</div>
+              <div class="place" id="pv-volta-origem-txt">—</div>
+              <div class="date" id="pv-volta-data-txt">—</div>
+            </div>
+            <div class="mid">
+              <div class="duration" id="pv-volta-duracao">—</div>
+              <div class="direct" id="pv-volta-tipo">—</div>
+            </div>
+            <div class="right">
+              <div class="time" id="pv-volta-chegada-h">--:--</div>
+              <div class="place" id="pv-volta-destino-txt">—</div>
+              <div class="date" id="pv-volta-data-txt2">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-section-title">Franquia de bagagem</div>
+        <div class="baggage-box" id="pv-bagagem"></div>
+
+        <div class="doc-section-title">Valores e condições de pagamento</div>
+        <div class="price-box">
+          <div class="total">
+            <span class="label">Valor total (ida e volta)</span>
+            <span class="value" id="pv-valor-total">R$ 0,00</span>
+          </div>
+          <div class="cond">
+            <div id="pv-valor-pix">• Pagamento à vista (Pix): —</div>
+            <div id="pv-valor-cartao">• Cartão de crédito: —</div>
+          </div>
+        </div>
+
+        <div class="doc-footer">IVB viagens · cotação gerada em <span id="pv-rodape-data"></span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function val(id){ return document.getElementById(id).value.trim(); }
+
+  function atualizarPreview(){
+    const hoje = new Date();
+    const dataFmt = hoje.toLocaleDateString('pt-BR');
+    document.getElementById('data-emissao').textContent = 'Data: ' + dataFmt;
+    document.getElementById('pv-rodape-data').textContent = dataFmt;
+
+    // ida
+    const idaOrigem = val('ida-origem') || '—';
+    const idaDestino = val('ida-destino') || '—';
+    document.getElementById('pv-ida-rota').textContent = 'IDA: ' + idaOrigem + ' → ' + idaDestino;
+    document.getElementById('pv-ida-cia').textContent = val('ida-cia') || '—';
+    document.getElementById('pv-ida-saida-h').textContent = val('ida-saida') || '--:--';
+    document.getElementById('pv-ida-chegada-h').textContent = val('ida-chegada') || '--:--';
+    document.getElementById('pv-ida-origem-txt').textContent = idaOrigem;
+    document.getElementById('pv-ida-destino-txt').textContent = idaDestino;
+    document.getElementById('pv-ida-data-txt').textContent = val('ida-data') || '—';
+    document.getElementById('pv-ida-data-txt2').textContent = val('ida-data') || '—';
+    document.getElementById('pv-ida-duracao').textContent = val('ida-duracao') || '—';
+    document.getElementById('pv-ida-tipo').textContent = (val('ida-tipo') || 'Voo direto').toUpperCase();
+
+    // volta
+    const voltaOrigem = val('volta-origem') || '—';
+    const voltaDestino = val('volta-destino') || '—';
+    document.getElementById('pv-volta-rota').textContent = 'VOLTA: ' + voltaOrigem + ' → ' + voltaDestino;
+    document.getElementById('pv-volta-cia').textContent = val('volta-cia') || '—';
+    document.getElementById('pv-volta-saida-h').textContent = val('volta-saida') || '--:--';
+    document.getElementById('pv-volta-chegada-h').textContent = val('volta-chegada') || '--:--';
+    document.getElementById('pv-volta-origem-txt').textContent = voltaOrigem;
+    document.getElementById('pv-volta-destino-txt').textContent = voltaDestino;
+    document.getElementById('pv-volta-data-txt').textContent = val('volta-data') || '—';
+    document.getElementById('pv-volta-data-txt2').textContent = val('volta-data') || '—';
+    document.getElementById('pv-volta-duracao').textContent = val('volta-duracao') || '—';
+    document.getElementById('pv-volta-tipo').textContent = (val('volta-tipo') || 'Voo direto').toUpperCase();
+
+    // bagagem
+    const bagagemTxt = val('bagagem').split('\n').filter(Boolean);
+    const bagagemBox = document.getElementById('pv-bagagem');
+    bagagemBox.innerHTML = bagagemTxt.map(l => '<p>' + l + '</p>').join('');
+
+    // valores
+    document.getElementById('pv-valor-total').textContent = val('valor-total') || 'R$ 0,00';
+    document.getElementById('pv-valor-pix').textContent = '• Pagamento à vista (Pix): ' + (val('valor-pix') || '—');
+    document.getElementById('pv-valor-cartao').textContent = '• Cartão de crédito: ' + (val('valor-cartao') || '—');
+  }
+
+  document.getElementById('btn-preview').addEventListener('click', atualizarPreview);
+  document.getElementById('btn-pdf').addEventListener('click', function(){
+    atualizarPreview();
+    window.print();
+  });
+
+  // preview inicial com os placeholders
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#preview-wrap input').forEach(()=>{});
+    atualizarPreview();
+  });
+</script>
+
+</body>
+</html>
