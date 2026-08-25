@@ -211,6 +211,7 @@ Mala despachada (23kg): valor sob consulta (inclusão realizada após a compra d
 
     </div>
     <div class="actions">
+      <button id="btn-limpar" type="button">Limpar dados</button>
       <button id="btn-preview" type="button">Atualizar prévia</button>
       <button id="btn-pdf" type="button">Gerar PDF</button>
     </div>
@@ -376,6 +377,18 @@ Mala despachada (23kg): valor sob consulta (inclusão realizada após a compra d
   aplicarMascaraMoeda(document.getElementById('valor-total'));
   aplicarMascaraMoeda(document.getElementById('valor-pix'));
 
+  const bagagemPadrao = document.getElementById('bagagem').value;
+
+  function limparCampos(){
+    const confirmar = confirm('Tem certeza que quer limpar todos os dados digitados?');
+    if(!confirmar) return;
+    document.querySelectorAll('.panel-body input').forEach(el => el.value = '');
+    document.querySelectorAll('.panel-body select').forEach(el => el.selectedIndex = 0);
+    document.getElementById('bagagem').value = bagagemPadrao;
+    atualizarPreview();
+  }
+
+  document.getElementById('btn-limpar').addEventListener('click', limparCampos);
   document.getElementById('btn-preview').addEventListener('click', atualizarPreview);
   document.getElementById('btn-pdf').addEventListener('click', function(){
     atualizarPreview();
