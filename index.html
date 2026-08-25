@@ -94,6 +94,22 @@
 
   .doc-footer{margin-top:20px;padding-top:12px;border-top:1px solid var(--line);font-size:10px;color:var(--ink-soft);text-align:center;}
 
+  /* ---------- CELULAR (Android / iPhone) ---------- */
+  @media(max-width:600px){
+    body{padding:16px 4vw 60px;}
+    .row.c2,.row.c3{grid-template-columns:1fr;}
+    .actions{flex-direction:column;padding:0 16px 16px;}
+    .actions button{width:100%;}
+    .panel-body{padding:16px;}
+    .doc-header{padding:18px 16px;}
+    .doc-header .top{flex-direction:column;gap:10px;}
+    .doc-header .meta{text-align:left;}
+    .doc-body{padding:16px 16px 20px;}
+    .flight-times{grid-template-columns:1fr;text-align:left;gap:4px;}
+    .flight-times .right{text-align:left;}
+    .flight-times .mid{text-align:left;padding:4px 0;}
+  }
+
   @media print{
     body{padding:0;background:#fff;}
     .panel,.app-title,.app-sub,.actions{display:none !important;}
