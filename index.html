@@ -82,10 +82,10 @@
   .flight-times .mid .direct{color:var(--teal);font-weight:bold;}
   .flight-times .right{text-align:right;}
 
-  .baggage-box{background:#EEF4FB;border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--ink);}
+  .baggage-box{background:#F4F4F2;border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--ink);}
   .baggage-box p{margin-bottom:4px;}
 
-  .price-box{background:#F7F9FB;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-top:6px;}
+  .price-box{background:#F4F4F2;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-top:6px;}
   .price-box .total{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .price-box .total .label{font-size:13px;font-weight:bold;color:var(--ink);}
   .price-box .total .value{font-size:20px;font-weight:bold;color:var(--teal);}
@@ -111,10 +111,13 @@
   }
 
   @media print{
-    body{padding:0;background:#fff;}
+    @page{margin:0;}
+    html,body{padding:0;margin:0;background:#fff;}
     .panel,.app-title,.app-sub,.actions{display:none !important;}
     .layout{display:block;}
     #preview-wrap{border:none;border-radius:0;}
+    .doc-body{padding:20px 26px 26px;}
+    .doc-header{padding:24px 26px;}
   }
 </style>
 </head>
